@@ -13,6 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { hello } from './example-module';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-console.log(hello());
+import { MeetingCalender } from './app/meeting-calender';
+
+/**
+ * Googleカレンダーのイベントをスプレッドシート(events)に連携する
+ */
+function linkMeetingSchedules() {
+  const eventsSheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('events');
+  if (!eventsSheet) {
+    throw new Error('events sheet not found');
+  }
+  const eventIdSet = new Set();
+  eventsSheet
+    .getRange(5, 1, eventsSheet.getLastRow(), 1)
+    .getValues()
+    .forEach(row => {
+      if (row[0]) {
+        eventIdSet.add(row[0]);
+      }
+    });
+  const events = MeetingCalender.getEventValues();
+  events
+    .filter(event => {
+      return !eventIdSet.has(event[0]);
+    })
+    .forEach(event => {
+      eventsSheet.appendRow(event);
+    });
+}
