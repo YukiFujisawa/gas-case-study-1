@@ -130,12 +130,12 @@ function updateMeetingGuests() {
 
   // カレンダーの参加者にいるが、スプレッドシートにいない場合は削除する
   eventValues.forEach(row => {
-    // row[0:Event 1:ID	2:タイトル	3:開始日時	4:終了日時	5:場所	6:説明	7:URL]
+    // row[0:Event 1:ID	2:タイトル	2:開始日時	3:終了日時	4:場所	5:説明	6:URL]
     const eventId = row[0];
     if (!eventId) {
       return;
     }
-    if (new Date(row[3]).getTime() < new Date().getTime()) {
+    if (new Date(row[2]).getTime() < new Date().getTime()) {
       return;
     }
     const event = CalendarApp.getEventById(eventId);
