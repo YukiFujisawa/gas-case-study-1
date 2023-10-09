@@ -144,8 +144,8 @@ function updateMeetingGuests() {
     }
 
     const notExistGuests = event.getGuestList().filter(guest => {
-      const foundGuest = guestValues.find(row => {
-        return row[0] === eventId && row[4] === guest.getEmail();
+      const foundGuest = guestValues.find(guestRow => {
+        return guestRow[0] === eventId && guestRow[4] === guest.getEmail();
       });
       if (foundGuest) {
         return false;
