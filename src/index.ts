@@ -130,7 +130,7 @@ function updateMeetingGuests() {
 
   // カレンダーの参加者にいるが、スプレッドシートにいない場合は削除する
   eventValues.forEach(row => {
-    // row[0:Event 1:ID	2:タイトル	2:開始日時	3:終了日時	4:場所	5:説明	6:URL]
+    // row[0:Event ID	1:タイトル	2:開始日時	3:終了日時	4:場所	5:説明	6:URL]
     const eventId = row[0];
     if (!eventId) {
       return;
