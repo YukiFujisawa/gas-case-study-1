@@ -103,6 +103,9 @@ function updateMeetingGuests() {
     if (!eventId) {
       return;
     }
+    if (new Date(row[2]).getTime() < new Date().getTime()) {
+      return;
+    }
     const event = CalendarApp.getEventById(eventId);
     if (!event) {
       return;
