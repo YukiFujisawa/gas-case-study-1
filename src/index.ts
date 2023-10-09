@@ -1,6 +1,53 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { MeetingCalender } from './app/meeting-calender';
+const PREFIX_MTG = 'MTG';
+
+/**
+ * 自分のカレンダーから会議予定(イベント)を取得します。
+ * @returns object[] 会議予定の配列
+ *  [0:Event 1:ID	2:タイトル	3:開始日時	4:終了日時	5:場所	6:説明	7:URL]
+ */
+function getMeetingEventValues_() {
+  const calendarId = Session.getActiveUser().getEmail();
+  const calendar = CalendarApp.getCalendarById(calendarId);
+  const startTime = new Date();
+  const entTime = new Date();
+  entTime.setDate(startTime.getDate() + 30);
+  const events = calendar.getEvents(startTime, entTime);
+  return events
+    .filter(event => {
+      return event.getTitle().includes(PREFIX_MTG);
+    })
+    .map(event => {
+      return [
+        event.getId(),
+        event.getTitle(),
+        event.getStartTime(),
+        event.getEndTime(),
+        event.getLocation(),
+        event.getDescription(),
+        getCalenderEventLink_(calendarId, event),
+      ];
+    });
+}
+
+/**
+ * 予定へのリンクを取得します。
+ * @param {string} calendarId カレンダーID
+ * @param { GoogleAppsScript.Calendar.CalendarEvent} event イベント
+ * @returns {string} 予定へのリンク
+ */
+function getCalenderEventLink_(
+  calendarId: string,
+  calendarEvent: GoogleAppsScript.Calendar.CalendarEvent
+) {
+  const baseUrl = 'https://www.google.com/calendar/event?eid=';
+  const splitEventId = calendarEvent.getId().split('@');
+  const eventUrl = `${baseUrl}${Utilities.base64Encode(
+    splitEventId[0] + ' ' + calendarId
+  )}`;
+  return eventUrl;
+}
 
 /**
  * Googleカレンダーのイベントをスプレッドシート(eventsシート)に連携する
@@ -20,7 +67,7 @@ function linkMeetingSchedules() {
         eventIdSet.add(row[0]);
       }
     });
-  const events = MeetingCalender.getEventValues();
+  const events = getMeetingEventValues_();
   events
     .filter(event => {
       return !eventIdSet.has(event[0]);
@@ -31,7 +78,7 @@ function linkMeetingSchedules() {
 }
 
 /**
- * スプレッドシート(guestsシート)にしたがって、カレンダー予定の参加者を更新する
+ * スプレッドシート(guestsシート)にしたがってカレンダー予定の参加者を更新する
  */
 function updateMeetingGuests() {
   const guestsSheet =
@@ -51,6 +98,7 @@ function updateMeetingGuests() {
 
   // カレンダーの参加者にいない場合は追加する
   guestValues.forEach(row => {
+    // row[0:Event ID	1:タイトル	2:開始時間	3:終了時間	4:メールアドレス	5:部署	6:名前]
     const eventId = row[0];
     if (!eventId) {
       return;
@@ -59,7 +107,6 @@ function updateMeetingGuests() {
     if (!event) {
       return;
     }
-    // 0:Event ID	1:タイトル	2:開始時間	3:終了時間	4:メールアドレス	5:部署	6:名前
     const guestEmail = row[4];
     if (!guestEmail) {
       return;
@@ -79,7 +126,7 @@ function updateMeetingGuests() {
 
   // カレンダーの参加者にいるが、スプレッドシートにいない場合は削除する
   eventValues.forEach(row => {
-    // Event ID	タイトル	開始日時	終了日時	場所	説明	URL
+    // row[0:Event 1:ID	2:タイトル	3:開始日時	4:終了日時	5:場所	6:説明	7:URL]
     const eventId = row[0];
     if (!eventId) {
       return;
