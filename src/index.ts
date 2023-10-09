@@ -7,7 +7,7 @@ const PREFIX_MTG = 'MTG';
  * @returns object[] 会議予定の配列
  *  [0:Event 1:ID	2:タイトル	3:開始日時	4:終了日時	5:場所	6:説明	7:URL]
  */
-function getMeetingEventValues_() {
+function getMeetingEventValues() {
   const calendarId = Session.getActiveUser().getEmail();
   const calendar = CalendarApp.getCalendarById(calendarId);
   const startTime = new Date();
@@ -26,7 +26,7 @@ function getMeetingEventValues_() {
         event.getEndTime(),
         event.getLocation(),
         event.getDescription(),
-        getCalenderEventLink_(calendarId, event),
+        getCalenderEventLink(calendarId, event),
       ];
     });
 }
@@ -37,7 +37,7 @@ function getMeetingEventValues_() {
  * @param { GoogleAppsScript.Calendar.CalendarEvent} event イベント
  * @returns {string} 予定へのリンク
  */
-function getCalenderEventLink_(
+function getCalenderEventLink(
   calendarId: string,
   calendarEvent: GoogleAppsScript.Calendar.CalendarEvent
 ) {
@@ -67,7 +67,7 @@ function linkMeetingSchedules() {
         eventIdSet.add(row[0]);
       }
     });
-  const events = getMeetingEventValues_();
+  const events = getMeetingEventValues();
   events
     .filter(event => {
       return !eventIdSet.has(event[0]);
