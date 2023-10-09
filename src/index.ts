@@ -34,7 +34,7 @@ function getMeetingEventValues() {
 /**
  * 予定へのリンクを取得します。
  * @param {string} calendarId カレンダーID
- * @param { GoogleAppsScript.Calendar.CalendarEvent} event イベント
+ * @param {GoogleAppsScript.Calendar.CalendarEvent} event イベント
  * @returns {string} 予定へのリンク
  */
 function getCalenderEventLink(
@@ -117,6 +117,7 @@ function updateMeetingGuests() {
     });
     if (!exists) {
       console.log('add guest:', guestEmail);
+      sendAddGuestMail(event, guestEmail);
       event.addGuest(guestEmail);
     }
   });
@@ -148,8 +149,51 @@ function updateMeetingGuests() {
     if (notExistGuests) {
       notExistGuests.forEach(guest => {
         console.log('remove guest:', guest.getEmail());
+        sendRemoveGuestMail(event, guest.getEmail());
         event.removeGuest(guest.getEmail());
       });
     }
   });
+}
+
+/**
+ * 招待追加のメールを送信します
+ * @param {GoogleAppsScript.Calendar.CalendarEvent} event イベント
+ * @param {string} guestEmail ゲストのメールアドレス
+ */
+function sendAddGuestMail(
+  event: GoogleAppsScript.Calendar.CalendarEvent,
+  guestEmail: string
+) {
+  const subject = '【招待追加】' + event.getTitle();
+  const body = `以下のイベントに招待追加されました。
+${event.getTitle()}
+${new Date(event.getStartTime().getTime()).toLocaleString(
+  'ja-JP'
+)} 〜 ${new Date(event.getEndTime().getTime()).toLocaleString('ja-JP')}
+${event.getLocation()}
+${event.getDescription()}
+${getCalenderEventLink(Session.getActiveUser().getEmail(), event)}`;
+  GmailApp.sendEmail(guestEmail, subject, body);
+}
+
+/**
+ * 招待削除のメールを送信します
+ * @param {GoogleAppsScript.Calendar.CalendarEvent} event イベント
+ * @param {string} guestEmail ゲストのメールアドレス
+ */
+function sendRemoveGuestMail(
+  event: GoogleAppsScript.Calendar.CalendarEvent,
+  guestEmail: string
+) {
+  const subject = '【招待削除】' + event.getTitle();
+  const body = `以下のイベントから招待削除されました。
+${event.getTitle()}
+${new Date(event.getStartTime().getTime()).toLocaleString(
+  'ja-JP'
+)} 〜 ${new Date(event.getEndTime().getTime()).toLocaleString('ja-JP')}
+${event.getLocation()}
+${event.getDescription()}
+${getCalenderEventLink(Session.getActiveUser().getEmail(), event)}`;
+  GmailApp.sendEmail(guestEmail, subject, body);
 }
